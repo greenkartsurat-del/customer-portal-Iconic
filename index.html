@@ -3059,7 +3059,7 @@
 
     // Fallback to portal-own keys if service panel config is not available
     if (!savedUrl) savedUrl = localStorage.getItem('cfg_bridge_url') || 'https://script.google.com/macros/s/AKfycbw5NkJU6iWuBTchaHb23H3CTSce2ZNKdLfjwNOqQt5gnuNxXLkTA350Gw7RXTWfuHg0/exec';
-    if (!savedGeminiKey) savedGeminiKey = localStorage.getItem('cfg_gemini_key') || 'AQ.Ab8RN6K3u7aHJu9eqLXpbE35_qYH95HQKf6O9dhuaF7e1wu7sQ';
+    if (!savedGeminiKey) savedGeminiKey = localStorage.getItem('cfg_gemini_key') || 'AQ.Ab8RN6LR4qvfk2Mp1yS6_GNpv9EhfO38DveLdhsNFchUf06tfg';
     
     STATE.config.url = savedUrl;
     STATE.config.key = savedKey;
@@ -4737,16 +4737,17 @@ Guidelines:
       }
     };
 
-    // Try stable v1 first, then fallback to v1beta, then try newer models
     const endpoints = [
-      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${STATE.config.geminiKey}`,
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${STATE.config.geminiKey}`,
+      `https://generativelanguage.googleapis.com/v1/models/gemini-3.5-flash:generateContent?key=${STATE.config.geminiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${STATE.config.geminiKey}`,
+      `https://generativelanguage.googleapis.com/v1/models/gemini-3.7-flash:generateContent?key=${STATE.config.geminiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent?key=${STATE.config.geminiKey}`,
+      `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${STATE.config.geminiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${STATE.config.geminiKey}`,
       `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${STATE.config.geminiKey}`,
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${STATE.config.geminiKey}`,
-      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-8b:generateContent?key=${STATE.config.geminiKey}`,
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key=${STATE.config.geminiKey}`,
-      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key=${STATE.config.geminiKey}`,
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${STATE.config.geminiKey}`
+      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${STATE.config.geminiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${STATE.config.geminiKey}`
     ];
 
     let lastError = null;
@@ -4845,10 +4846,16 @@ Required JSON structure:
 
       progressCallback(75, 'Extracting fields with AI...');
       const endpoints = [
-        `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${STATE.config.geminiKey}`,
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${STATE.config.geminiKey}`,
+        `https://generativelanguage.googleapis.com/v1/models/gemini-3.5-flash:generateContent?key=${STATE.config.geminiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${STATE.config.geminiKey}`,
+        `https://generativelanguage.googleapis.com/v1/models/gemini-3.7-flash:generateContent?key=${STATE.config.geminiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent?key=${STATE.config.geminiKey}`,
+        `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${STATE.config.geminiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${STATE.config.geminiKey}`,
         `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${STATE.config.geminiKey}`,
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${STATE.config.geminiKey}`
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${STATE.config.geminiKey}`,
+        `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${STATE.config.geminiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${STATE.config.geminiKey}`
       ];
 
       let lastError = null;
