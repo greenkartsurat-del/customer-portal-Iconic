@@ -2093,6 +2093,46 @@
         </div>
         
         <div class="form-grid">
+          <!-- OCR Bill/Card Scanner widget for Request Service -->
+          <div class="field span-2">
+            <div class="alert-box info" style="margin-bottom: 12px; background: var(--green-soft); color: var(--primary); border: 1px solid var(--green-border);">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-top:2px; flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              <div>
+                <strong data-i18n="reg_ocr_title">Instant Serial OCR Verification</strong>
+                <p style="margin:2px 0 0; font-size:11.5px; color:inherit; opacity:0.9;" data-i18n="reg_ocr_subtitle">Upload invoice. Our system scans the image to extract details automatically.</p>
+              </div>
+            </div>
+            
+            <input type="file" id="comp-invoice-file-input" style="display:none;" accept="image/*,.pdf" onchange="handleCompFileSelect(event)">
+            <div class="upload-area" id="comp-drop-zone" onclick="document.getElementById('comp-invoice-file-input').click()" style="border: 2px dashed var(--line); border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.2s;">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary); margin-bottom: 8px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <p style="margin: 0 0 4px; font-weight: 600; font-size: 13.5px;" data-i18n="reg_upload_btn">Click to choose files or drag invoice here</p>
+              <small style="color: var(--ink-soft); font-size: 11px;" data-i18n="reg_upload_limit">Supports PNG, JPG, PDF up to 4MB</small>
+            </div>
+            
+            <div class="upload-preview" id="comp-upload-preview" style="display:none; align-items: center; justify-content: space-between; background: var(--paper); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--line); margin-top: 10px;">
+              <div class="preview-info" style="display: flex; align-items: center; gap: 10px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--primary);"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <div>
+                  <strong id="comp-preview-file-name" style="font-size: 13px; color: var(--ink);">invoice.png</strong>
+                  <div style="font-size:11px; color:var(--ink-soft);" id="comp-preview-file-size">120 KB</div>
+                </div>
+              </div>
+              <button class="btn secondary" style="padding:4px 8px; font-size:11px;" onclick="clearCompUploadedFile()" data-i18n="reg_btn_remove">Remove</button>
+            </div>
+            
+            <div class="scan-progress-box" id="comp-scan-progress-box" style="display:none; background: var(--paper); padding: 14px; border-radius: 8px; border: 1px solid var(--line); margin-top: 10px;">
+              <div style="display:flex; justify-content:between; align-items:center; margin-bottom: 6px;">
+                <span class="scan-status" id="comp-scan-status-text" style="font-size:12px; font-weight:600;" data-i18n="reg_scan_status">Uploading to secure servers...</span>
+                <span class="mono" id="comp-scan-pct" style="font-size:12px; font-weight:600; margin-left:auto;">0%</span>
+              </div>
+              <div class="scan-bar" style="height: 6px; background: var(--line); border-radius: 10px; overflow: hidden;">
+                <div class="scan-bar-fill" id="comp-scan-bar-fill" style="width: 0%; height: 100%; background: var(--primary); transition: width 0.08s;"></div>
+              </div>
+              <p style="margin:4px 0 0; font-size:11px; color:var(--ink-soft);" id="comp-scan-sub" data-i18n="reg_scan_hint">Do not close window.</p>
+            </div>
+          </div>
+
           <div class="field span-2">
             <label data-i18n="complaint_lbl_name">Customer Name *</label>
             <input type="text" id="comp-name" placeholder="e.g. Arun Kumar" data-i18n-placeholder="comp_placeholder_name">
@@ -2163,7 +2203,7 @@
           </div>
           
           <div class="field span-2">
-            <label data-i18n="complaint_lbl_desc">Describe the issue in detail *</label>
+            <label data-i18n="complaint_lbl_desc">Describe the issue in detail</label>
             <textarea id="comp-details" rows="3" placeholder="e.g. Fan is rotating but pump is not sucking water, creating dry air..." data-i18n-placeholder="comp_placeholder_desc"></textarea>
           </div>
         </div>
@@ -2522,7 +2562,7 @@
       comp_placeholder_addr: "e.g. Kenar chatti near Hanuman Mandir",
       complaint_lbl_issue: "Issue Category *",
       complaint_lbl_date: "Preferred Visit Date",
-      complaint_lbl_desc: "Describe the issue in detail *",
+      complaint_lbl_desc: "Describe the issue in detail",
       comp_placeholder_desc: "e.g. Fan is rotating but pump is not sucking water, creating dry air...",
       complaint_btn: "Register Complaint →",
 
@@ -2671,7 +2711,7 @@
       comp_placeholder_addr: "उदा. केनार चट्टी हनुमान मंदिर के पास",
       complaint_lbl_issue: "समस्या की श्रेणी *",
       complaint_lbl_date: "विजिट के लिए पसंदीदा तारीख",
-      complaint_lbl_desc: "समस्या का विस्तृत विवरण *",
+      complaint_lbl_desc: "समस्या का विस्तृत विवरण",
       comp_placeholder_desc: "उदा. कूलर का पंखा चल रहा है लेकिन पंप पानी नहीं खींच रहा है, जिससे गर्म हवा आ रही है...",
       complaint_btn: "शिकायत दर्ज करें →",
 
@@ -3827,6 +3867,83 @@
     }
   }
 
+  // File Upload and OCR simulation for Request Service (Complaint Panel)
+  function handleCompFileSelect(evt) {
+    const file = evt.target.files[0];
+    if (!file) return;
+    processCompInvoiceFile(file);
+  }
+
+  function processCompInvoiceFile(file) {
+    document.getElementById('comp-preview-file-name').textContent = file.name;
+    document.getElementById('comp-preview-file-size').textContent = `${Math.round(file.size / 1024)} KB`;
+    
+    document.getElementById('comp-upload-preview').style.display = 'flex';
+    document.getElementById('comp-drop-zone').style.display = 'none';
+    
+    simulateCompInvoiceScan();
+  }
+
+  function clearCompUploadedFile() {
+    document.getElementById('comp-upload-preview').style.display = 'none';
+    document.getElementById('comp-drop-zone').style.display = 'block';
+    document.getElementById('comp-scan-progress-box').style.display = 'none';
+    document.getElementById('comp-invoice-file-input').value = '';
+  }
+
+  function simulateCompInvoiceScan() {
+    const box = document.getElementById('comp-scan-progress-box');
+    const fill = document.getElementById('comp-scan-bar-fill');
+    const status = document.getElementById('comp-scan-status-text');
+    const sub = document.getElementById('comp-scan-sub');
+    const pctLabel = document.getElementById('comp-scan-pct');
+    const submitBtn = document.querySelector('#panel-complaint .btn.primary');
+    
+    box.style.display = 'block';
+    submitBtn.classList.add('disabled');
+    
+    let progress = 0;
+    fill.style.width = '0%';
+    pctLabel.textContent = '0%';
+    
+    const steps = [
+      { prg: 20, txt: 'Scanning uploaded ticket image...' },
+      { prg: 45, txt: 'Extracting buyer name and phone...' },
+      { prg: 70, txt: 'Reading product type and serial...' },
+      { prg: 90, txt: 'Matching details with registered database...' },
+      { prg: 100, txt: 'Data extraction completed successfully!' }
+    ];
+    
+    const timer = setInterval(() => {
+      progress += 2;
+      fill.style.width = progress + '%';
+      pctLabel.textContent = progress + '%';
+      
+      const match = steps.find(s => progress <= s.prg);
+      if (match) {
+        status.textContent = match.txt;
+      }
+      
+      if (progress >= 100) {
+        clearInterval(timer);
+        sub.textContent = 'Form details auto-filled. Verify and submit your repair request.';
+        submitBtn.classList.remove('disabled');
+        
+        // Auto fill Complaint Panel fields
+        document.getElementById('comp-name').value = 'Arun Vishwakarma';
+        document.getElementById('comp-phone').value = '9525777546';
+        document.getElementById('comp-email').value = 'arun@example.com';
+        document.getElementById('comp-product').value = 'Cooler';
+        document.getElementById('comp-serial').value = 'VGR-DC65BGF2E2500670';
+        document.getElementById('comp-city').value = 'Gaya';
+        document.getElementById('comp-state').value = 'Bihar';
+        document.getElementById('comp-addr').value = 'Kenar chatti near Hanuman Mandir';
+        document.getElementById('comp-category').value = 'Cooling Issue';
+        document.getElementById('comp-details').value = 'Cooler is running but pump is not sucking water, creating dry hot air.';
+      }
+    }, 80);
+  }
+
   function saveLocalAndShowCert(payload, ticketId) {
     payload.ticketId = ticketId;
     
@@ -4004,7 +4121,7 @@
     const desc = document.getElementById('comp-details').value.trim();
     const preferredDate = document.getElementById('comp-visit-date').value;
     
-    if (!name || !phone || !city || !addr || !desc) {
+    if (!name || !phone || !city || !addr) {
       alert('Please fill out all mandatory fields marked with *');
       return;
     }
