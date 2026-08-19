@@ -3620,22 +3620,27 @@
     const phone = record['Phone No.'] || 'N/A';
     
     // Dates
-    const purchaseDateStr = record['Invoice Date'] || record['Date'] || '';
+    const purchaseDateStr = record['Invoice Date'] || '';
     let expiryDateStr = record['Warranty'] || '';
     
     let isExpired = true;
     let daysRemaining = 0;
     let totalDays = 365;
     let percent = 0;
+    let hasWarrantyData = false;
     
-    if (purchaseDateStr && !expiryDateStr) {
-      // Auto calculate 1 year if missing
-      const pDate = new Date(purchaseDateStr);
-      pDate.setFullYear(pDate.getFullYear() + 1);
-      expiryDateStr = pDate.toISOString().split('T')[0];
+    if (purchaseDateStr) {
+      hasWarrantyData = true;
+      if (!expiryDateStr) {
+        // Auto calculate 1 year if missing
+        const pDate = new Date(purchaseDateStr);
+        pDate.setFullYear(pDate.getFullYear() + 1);
+        expiryDateStr = pDate.toISOString().split('T')[0];
+      }
     }
     
     if (expiryDateStr) {
+      hasWarrantyData = true;
       const expiry = new Date(expiryDateStr);
       const purchase = purchaseDateStr ? new Date(purchaseDateStr) : new Date(expiry.getTime() - (365*24*60*60*1000));
       const today = new Date();
@@ -3664,6 +3669,8 @@
     // Check for active AMC plan as well
     const matchedAmc = STATE.amcs.find(a => a.serial.toLowerCase() === serialNum.toLowerCase());
     
+    const progressWrapper = bar.parentElement; // the progress bar container
+    
     if (matchedAmc) {
       badge.textContent = 'Active AMC';
       badge.className = 'status-badge active';
@@ -3675,15 +3682,33 @@
       bar.style.width = '100%';
       bar.className = 'status-bar-fill';
       bar.style.background = 'var(--amber)';
+      if (progressWrapper) progressWrapper.style.display = 'block';
       
       document.getElementById('res-coverage-text').textContent = `Subscribed to AMC Plan [${matchedAmc.plan}]. Covers annual scheduled tune-ups, breakdown calls, and parts discounts.`;
+    } else if (!hasWarrantyData) {
+      badge.textContent = 'Unregistered';
+      badge.className = 'status-badge expired';
+      badge.style.background = 'var(--line)';
+      badge.style.color = 'var(--ink-soft)';
+      badge.style.borderColor = 'var(--line)';
+      
+      daysLabel.textContent = 'No Warranty Data';
+      bar.style.width = '0%';
+      if (progressWrapper) progressWrapper.style.display = 'none';
+      
+      document.getElementById('res-coverage-text').textContent = 'No active manufacturer warranty registration was found for this appliance. You can register your warranty using the Register Warranty tab to secure coverage.';
     } else if (isExpired) {
       badge.textContent = 'Expired';
       badge.className = 'status-badge expired';
+      badge.style.background = '';
+      badge.style.color = '';
+      badge.style.borderColor = '';
       
       daysLabel.textContent = 'Warranty Expired';
       bar.style.width = '100%';
       bar.className = 'status-bar-fill expired';
+      bar.style.background = '';
+      if (progressWrapper) progressWrapper.style.display = 'block';
       
       document.getElementById('res-coverage-text').textContent = 'Manufacturer warranty coverage has ended. Repair diagnostics, labor and replacements are chargeable. Purchase AMC below to save on repair costs.';
     } else {
@@ -3697,6 +3722,7 @@
       bar.style.width = `${percent}%`;
       bar.className = 'status-bar-fill';
       bar.style.background = '';
+      if (progressWrapper) progressWrapper.style.display = 'block';
       
       document.getElementById('res-coverage-text').textContent = 'Standard manufacturer warranty covers repair or replacement of compressor, pump, motor, and electronic boards.';
     }
@@ -3734,11 +3760,14 @@
         else if (stLower === 'in progress' || stLower === 'active' || stLower === 'progress') statusClass = 'in-progress';
         else if (stLower === 'closed' || stLower === 'resolved' || stLower === 'complete' || stLower === 'completed') statusClass = 'resolved';
         
+        const isSearched = searchKey && tId.toLowerCase().trim() === searchKey.toLowerCase().trim();
+        const highlightStyle = isSearched ? 'border: 2px solid var(--primary); background: var(--green-soft); box-shadow: 0 0 10px rgba(15, 118, 110, 0.2);' : 'border:1px solid var(--line); background:var(--paper);';
+        
         const item = document.createElement('div');
-        item.style.cssText = 'background:var(--paper); padding:10px 12px; border-radius:8px; border:1px solid var(--line); display:flex; justify-content:space-between; align-items:center;';
+        item.style.cssText = `padding:10px 12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px; ${highlightStyle}`;
         item.innerHTML = `
           <div>
-            <div style="font-weight:600; font-size:13px; color:var(--ink);">${tId} - ${issue}</div>
+            <div style="font-weight:600; font-size:13px; color:var(--ink);">${tId} - ${issue} ${isSearched ? '<span class="status-badge active" style="font-size:9px; padding:1px 4px; margin-left:6px; background:var(--primary); color:#fff;">Searched Ticket</span>' : ''}</div>
             <div style="font-size:11px; color:var(--ink-soft); margin-top:2px;">Date: ${dateStr}</div>
           </div>
           <div class="status-badge ${statusClass}" style="font-size:11px; padding:3px 8px; border-radius:4px; font-weight:600;">${status}</div>
@@ -3848,6 +3877,73 @@
     progressBox.style.display = 'block';
     uploadArea.style.opacity = '0.5';
     uploadArea.style.pointerEvents = 'none';
+
+    // Real Gemini AI OCR integration
+    if (STATE.config.geminiKey) {
+      try {
+        const parsed = await performAiOcrScan(file, (prg, txt) => {
+          fill.style.width = prg + '%';
+          pctLabel.textContent = prg + '%';
+          statusText.textContent = txt;
+        });
+
+        // Fill values
+        if (parsed.customerName) document.getElementById('reg-cust-name-val').value = parsed.customerName;
+        if (parsed.phone) document.getElementById('reg-phone-val').value = parsed.phone;
+        if (parsed.email) document.getElementById('reg-email-val').value = parsed.email;
+        if (parsed.address) document.getElementById('reg-addr-val').value = parsed.address;
+        if (parsed.city) document.getElementById('reg-city-val').value = parsed.city;
+        if (parsed.state) document.getElementById('reg-state-val').value = parsed.state;
+        
+        if (parsed.productType) {
+          const typeMap = {
+            'cooler': 'Cooler', 'tv': 'TV', 'washingmachine': 'Washing Machine', 'washing machine': 'Washing Machine', 'other': 'Other'
+          };
+          const mapped = typeMap[parsed.productType.toLowerCase().trim()] || 'Other';
+          document.getElementById('reg-prod-type').value = mapped;
+          adjustSizeOptions();
+        }
+        if (parsed.productSize) document.getElementById('reg-prod-size').value = parsed.productSize;
+        if (parsed.serialNumber) document.getElementById('reg-serial-val').value = parsed.serialNumber;
+        if (parsed.invoiceDate) document.getElementById('reg-invoice-date').value = parsed.invoiceDate;
+        if (parsed.billNumber) document.getElementById('reg-bill-no').value = parsed.billNumber;
+        if (parsed.dealerName) document.getElementById('reg-dealer').value = parsed.dealerName;
+
+        alert("AI Invoice OCR scan complete! Real data extracted and populated.");
+        
+        // Restore upload area style
+        uploadArea.innerHTML = `
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--primary); margin-bottom: 8px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <h4 style="margin: 0; font-size: 14px; font-weight: 700; color: var(--primary);">Invoice Scanned with AI!</h4>
+          <p style="margin: 4px 0 0; font-size: 12px; color: var(--ink-soft);">Details successfully read from <b>${file.name}</b></p>
+        `;
+        uploadArea.style.opacity = '1';
+        uploadArea.style.background = 'var(--green-soft)';
+        uploadArea.style.borderColor = 'var(--primary)';
+        progressBox.style.display = 'none';
+        uploadArea.style.pointerEvents = 'auto';
+
+        // Pre-configure scan-progress-box in Step 3
+        const step3ProgressBox = document.getElementById('scan-progress-box');
+        const step3Fill = document.getElementById('scan-bar-fill');
+        const step3Status = document.getElementById('scan-status-text');
+        const step3Sub = document.getElementById('scan-sub');
+        const step3PctLabel = document.getElementById('scan-pct');
+        const step3Btn = document.getElementById('btn-submit-registration');
+
+        if(step3ProgressBox && step3Fill && step3Status && step3Sub && step3PctLabel && step3Btn) {
+          step3ProgressBox.style.display = 'block';
+          step3Fill.style.width = '100%';
+          step3PctLabel.textContent = '100%';
+          step3Status.textContent = 'Invoice validated successfully!';
+          step3Sub.textContent = 'Validation completed. Click Submit below to register warranty.';
+          step3Btn.classList.remove('disabled');
+        }
+        return;
+      } catch (err) {
+        console.warn("Real AI OCR failed, falling back to simulation mode:", err);
+      }
+    }
 
     let progress = 0;
     const steps = [
@@ -4106,13 +4202,57 @@
     processCompInvoiceFile(file);
   }
 
-  function processCompInvoiceFile(file) {
+  async function processCompInvoiceFile(file) {
     document.getElementById('comp-preview-file-name').textContent = file.name;
     document.getElementById('comp-preview-file-size').textContent = `${Math.round(file.size / 1024)} KB`;
     
     document.getElementById('comp-upload-preview').style.display = 'flex';
     document.getElementById('comp-drop-zone').style.display = 'none';
     
+    // Check if Gemini API Key is configured for Request Service OCR
+    if (STATE.config.geminiKey) {
+      const box = document.getElementById('comp-scan-progress-box');
+      const fill = document.getElementById('comp-scan-bar-fill');
+      const statusText = document.getElementById('comp-scan-status-text');
+      const subText = document.getElementById('comp-scan-sub');
+      const pctLabel = document.getElementById('comp-scan-pct');
+      const submitBtn = document.querySelector('#panel-complaint .btn.primary');
+      
+      box.style.display = 'block';
+      submitBtn.classList.add('disabled');
+      
+      try {
+        const parsed = await performAiOcrScan(file, (prg, txt) => {
+          fill.style.width = prg + '%';
+          pctLabel.textContent = prg + '%';
+          statusText.textContent = txt;
+        });
+
+        // Fill fields
+        if (parsed.customerName) document.getElementById('comp-name').value = parsed.customerName;
+        if (parsed.phone) document.getElementById('comp-phone').value = parsed.phone;
+        if (parsed.email) document.getElementById('comp-email').value = parsed.email;
+        if (parsed.address) document.getElementById('comp-addr').value = parsed.address;
+        if (parsed.city) document.getElementById('comp-city').value = parsed.city;
+        if (parsed.state) document.getElementById('comp-state').value = parsed.state;
+        
+        if (parsed.productType) {
+          const typeMap = {
+            'cooler': 'Cooler', 'tv': 'TV', 'washingmachine': 'Washing Machine', 'washing machine': 'Washing Machine', 'other': 'Other'
+          };
+          const mapped = typeMap[parsed.productType.toLowerCase().trim()] || 'Other';
+          document.getElementById('comp-product').value = mapped;
+        }
+        if (parsed.serialNumber) document.getElementById('comp-serial').value = parsed.serialNumber;
+        
+        subText.textContent = 'AI OCR Scan Complete! Details successfully extracted.';
+        submitBtn.classList.remove('disabled');
+        return;
+      } catch (err) {
+        console.warn("Real AI OCR failed in Request Service, fallback to simulation:", err);
+      }
+    }
+
     simulateCompInvoiceScan();
   }
 
@@ -4639,7 +4779,118 @@ Guidelines:
         lastError = e;
       }
     }
-    throw lastError || new Error('All Gemini endpoints failed');
+  }
+
+  // AI multimodal OCR Scanner using Gemini
+  async function performAiOcrScan(file, progressCallback) {
+    if (!STATE.config.geminiKey) {
+      throw new Error("No Gemini API Key found in settings.");
+    }
+    
+    const getBase64 = (f) => new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(f);
+      reader.onload = () => {
+        const base64String = reader.result.split(',')[1];
+        resolve(base64String);
+      };
+      reader.onerror = error => reject(error);
+    });
+
+    try {
+      progressCallback(20, 'Reading invoice file contents...');
+      const base64Data = await getBase64(file);
+      
+      progressCallback(45, 'Sending to Gemini AI for OCR...');
+      const prompt = `Extract fields from this appliance purchase invoice or bill image. Return ONLY a valid, single JSON object. Do NOT wrap it in markdown block like \`\`\`json. If any field is missing or not readable, set it to "".
+Required JSON structure:
+{
+  "customerName": "Customer full name",
+  "phone": "10-digit customer mobile number",
+  "email": "Customer email if present",
+  "address": "Customer street address",
+  "city": "Customer city",
+  "state": "Customer state",
+  "productType": "Cooler" or "TV" or "Washing Machine" or "Other",
+  "productSize": "Capacity/Size e.g. 65L, 43 Inch, 7 kg",
+  "serialNumber": "Serial Number or Sr. No. or SL No. of the appliance",
+  "invoiceDate": "Purchase/invoice date in YYYY-MM-DD format",
+  "billNumber": "Invoice/Bill/Cash Memo Number",
+  "dealerName": "Dealer, shop, or agency name"
+}`;
+
+      const requestBody = {
+        contents: [
+          {
+            parts: [
+              { text: prompt },
+              {
+                inlineData: {
+                  mimeType: file.type || 'image/jpeg',
+                  data: base64Data
+                }
+              }
+            ]
+          }
+        ],
+        generationConfig: {
+          temperature: 0.1,
+          maxOutputTokens: 500,
+          responseMimeType: "application/json"
+        }
+      };
+
+      progressCallback(75, 'Extracting fields with AI...');
+      const endpoints = [
+        `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${STATE.config.geminiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${STATE.config.geminiKey}`,
+        `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${STATE.config.geminiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${STATE.config.geminiKey}`
+      ];
+
+      let lastError = null;
+      let textResponse = '';
+      for (const url of endpoints) {
+        try {
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestBody)
+          });
+          if (response.ok) {
+            const result = await response.json();
+            const candidates = result.candidates || [];
+            if (candidates.length > 0 && candidates[0].content && candidates[0].content.parts && candidates[0].content.parts.length > 0) {
+              textResponse = candidates[0].content.parts[0].text;
+              break;
+            }
+          } else {
+            const errData = await response.json().catch(() => ({}));
+            lastError = new Error((errData.error && errData.error.message) || `HTTP ${response.status}`);
+          }
+        } catch (e) {
+          lastError = e;
+        }
+      }
+
+      if (!textResponse) {
+        throw lastError || new Error("Failed to contact Gemini endpoints");
+      }
+
+      progressCallback(95, 'Parsing invoice fields...');
+      let cleanText = textResponse.trim();
+      if (cleanText.startsWith('```')) {
+        cleanText = cleanText.replace(/^```(json)?/, '').replace(/```$/, '').trim();
+      }
+      
+      const parsed = JSON.parse(cleanText);
+      progressCallback(100, 'AI OCR Completed!');
+      return parsed;
+
+    } catch (e) {
+      console.error("AI OCR failed:", e);
+      throw e;
+    }
   }
 
   // Pre-configured replies for offline mode
