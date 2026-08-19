@@ -70,6 +70,7 @@
     cursor: pointer;
     text-decoration: none;
     color: inherit;
+    flex-shrink: 0;
   }
   
   .brand-logo {
@@ -85,6 +86,7 @@
     font-weight: 700;
     font-size: 20px;
     color: var(--primary);
+    flex-shrink: 0;
   }
   
   .brand-title h1 {
@@ -848,6 +850,75 @@
     .form-grid { grid-template-columns: 1fr; }
     .field.span-2 { grid-column: span 1; }
     .nav-links { display: none; }
+    #portalHelplineLinkMobile { display: inline-flex !important; }
+  }
+  
+  @media(max-width: 600px) {
+    /* Header layout fixes on mobile */
+    .nav-container {
+      flex-wrap: nowrap;
+      gap: 6px;
+      justify-content: space-between;
+      width: 100%;
+    }
+    header {
+      padding: 12px 14px;
+    }
+    .brand-title p {
+      display: none; /* Hide subtitle to save space */
+    }
+    .brand-title h1 {
+      font-size: 14.5px; /* Reduce title font size slightly */
+      line-height: 1.2;
+    }
+    .sync-status-indicator {
+      padding: 4px 6px;
+      gap: 4px;
+    }
+    #sync-text {
+      display: none; /* Hide Loading/Online/Offline text, only show dot */
+    }
+    #current-lang-label {
+      display: none; /* Hide 'English'/'Hindi' label, show globe icon only */
+    }
+    .lang-btn {
+      padding: 6px 8px !important;
+      height: 32px !important;
+    }
+    #portalHelplineLinkMobile {
+      padding: 6px 10px !important;
+      height: 32px !important;
+    }
+    .settings-trigger {
+      width: 32px !important;
+      height: 32px !important;
+    }
+    
+    /* Quick search mobile layout stack */
+    .quick-search {
+      flex-direction: column;
+      background: transparent;
+      box-shadow: none;
+      padding: 0;
+      gap: 10px;
+      width: 100%;
+      max-width: 100%;
+    }
+    .quick-search input {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 12px;
+      width: 100%;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      box-sizing: border-box;
+      flex: none;
+    }
+    .quick-search button {
+      width: 100%;
+      border-radius: 12px;
+      padding: 14px;
+      box-shadow: 0 4px 12px rgba(15, 118, 110, 0.3);
+      flex: none;
+    }
   }
   
   .amc-card {
@@ -1661,7 +1732,7 @@
       </button>
       
       <!-- Toll-Free Helpline Link (Mobile Fallback) -->
-      <a href="tel:18002023763" id="portalHelplineLinkMobile" style="background:var(--green-soft); border:1px solid var(--green-border); color:var(--primary); font-size:12px; font-weight:700; padding:6px 12px; border-radius:6px; text-decoration:none; align-items:center; justify-content:center; gap:6px; height:34px;">
+      <a href="tel:18002023763" id="portalHelplineLinkMobile" style="background:var(--green-soft); border:1px solid var(--green-border); color:var(--primary); font-size:12px; font-weight:700; padding:6px 12px; border-radius:6px; text-decoration:none; display:none; align-items:center; justify-content:center; gap:6px; height:34px; box-sizing:border-box;">
         📞
       </a>
 
