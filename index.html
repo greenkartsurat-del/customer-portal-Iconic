@@ -3943,6 +3943,7 @@
         return;
       } catch (err) {
         console.warn("Real AI OCR failed, falling back to simulation mode:", err);
+        alert("Gemini AI OCR Error: " + err.message + "\n\n(Note: The configured API key may be invalid or expired. We will fall back to simulated offline demo data.)");
       }
     }
 
@@ -4251,6 +4252,7 @@
         return;
       } catch (err) {
         console.warn("Real AI OCR failed in Request Service, fallback to simulation:", err);
+        alert("Gemini AI OCR Error: " + err.message + "\n\n(Note: The configured API key may be invalid or expired. We will fall back to simulated offline demo data.)");
       }
     }
 
