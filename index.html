@@ -3857,7 +3857,7 @@
   }
 
   // Step 1 Camera / File Scanner Auto-Fill
-  function handleStep1FileSelect(evt) {
+  async function handleStep1FileSelect(evt) {
     const file = evt.target.files[0];
     if (!file) return;
 
