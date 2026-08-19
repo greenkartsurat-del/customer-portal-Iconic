@@ -3058,7 +3058,7 @@
     } catch (e) {}
 
     // Fallback to portal-own keys if service panel config is not available
-    if (!savedUrl) savedUrl = localStorage.getItem('cfg_bridge_url') || '';
+    if (!savedUrl) savedUrl = localStorage.getItem('cfg_bridge_url') || 'https://script.google.com/macros/s/AKfycbw5NkJU6iWuBTchaHb23H3CTSce2ZNKdLfjwNOqQt5gnuNxXLkTA350Gw7RXTWfuHg0/exec';
     if (!savedGeminiKey) savedGeminiKey = localStorage.getItem('cfg_gemini_key') || '';
     
     STATE.config.url = savedUrl;
